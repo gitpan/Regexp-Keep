@@ -6,7 +6,7 @@
 # change 'tests => 1' to 'tests => last_test_to_print';
 
 use Test;
-BEGIN { plan tests => 2 };
+BEGIN { plan tests => 3 };
 use Regexp::Keep;
 ok(1); # If we made it this far, we're ok.
 
@@ -20,3 +20,7 @@ my $x;
 $x = "abc.def.ghi.jkl";
 $x =~ s/.*\K\..*//;
 ok($x eq "abc.def.ghi");
+
+$x = "one two three four";
+$x =~ s/o+ \Kthree//g;
+ok($x eq "one two  four");

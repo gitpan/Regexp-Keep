@@ -8,14 +8,18 @@ use overload;
 require DynaLoader;
 
 our @ISA = qw(DynaLoader);
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 bootstrap Regexp::Keep $VERSION;
+
+my %tr = (
+  K => '.{0}(?{ Regexp::Keep::KEEP })',
+);
 
 sub import {
   overload::constant('qr' => sub {
     my $raw = shift;
-    $raw =~ s/(?<!\\)((?:\\\\)*)\\K/$1(?{Regexp::Keep::KEEP})/g;
+    $raw =~ s/\\(\C)/$tr{$1} || "\\$1"/eg;
     return $raw;
   })
 }
@@ -56,7 +60,7 @@ construct.
 
 =head1 IMPLEMENTATION
 
-What C<\K> filters into is C<(?{ Regexp::Keep::KEEP })>, which is an XS
+What C<\K> filters into is C<.{0}(?{ Regexp::Keep::KEEP })>, which is an XS
 function call embedded into the regex.  The function sets C<PL_regstartp[0]>
 to the current location in the string.  This means that C<$&> now starts
 where C<\K> is seen.  That means a replacement will begin being replaced
@@ -86,12 +90,19 @@ Here's are short examples to show you the abilities of C<\K>:
 
 =head1 BUGS
 
+I fixed a bug where C<\K> following a simple thing (like a letter that isn't
+followed by a quantifier) didn't work properly.
+
 If you're using this module, you don't have a version of Perl with the C<\K>
-escape built-in.  For shame.  Upgrade.
+escape built-in.  Bummer.  I should try to make it built-in.
 
 =head1 HISTORY
 
 =over 4
+
+=item 0.02
+
+Fixed C</a\Kb/> to become C</a.{0}\Kb/>, which makes a nasty bug disappear.
 
 =item 0.01
 
@@ -103,10 +114,13 @@ Original release.
 
 Jeff C<japhy> Pinyan, F<japhy@pobox.com>
 
-F<http://www.pobox.com/~japhy/>
+=head1 COPYRIGHT AND LICENSE
 
-=head1 SEE ALSO
+Copyright (C) 2004 by japhy
 
-F<Regexp::Parts>, L<perlre>.
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself, either Perl version 5.8.3 or,
+at your option, any later version of Perl 5 you may have available.
 
 
+=cut

@@ -12,9 +12,3 @@ KEEP()
     PROTOTYPE:
     CODE:
 	PL_regstartp[0] = PL_reginput - PL_bostr;
-
-void
-FORSAKE()
-    PROTOTYPE:
-    CODE:
-	PL_regendp[0] = -(PL_reginput - PL_bostr);
